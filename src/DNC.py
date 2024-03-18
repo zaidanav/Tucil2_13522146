@@ -8,6 +8,7 @@ class BezierCurve:
         self.ctrl_points = ctrl_points
         self.iterations = iterations
         self.bezier_points = []
+        self.time = 0
         self.generate_bezier()
 
     def midpoint(self, point1, point2):
@@ -25,10 +26,15 @@ class BezierCurve:
             self.interpolate_bezier_points(mid3, mid2, ctrl3, current_iteration)
 
     def generate_bezier(self):
+        start = time.time()
         ctrl1, ctrl2, ctrl3 = self.ctrl_points
         self.bezier_points = [ctrl1]
         self.interpolate_bezier_points(ctrl1, ctrl2, ctrl3, 0)
         self.bezier_points.append(ctrl3)
+        self.time += time.time() - start
+    
+    def gettime(self):
+        return self.time
 
 def get_input():
     print("Masukkan 3 titik point:")
@@ -42,21 +48,23 @@ def animate(i):
     points = np.array(bezier_curve.bezier_points)
     ctrl_points_array = np.array(ctrl_points)
     plt.plot(points[:, 0], points[:, 1], 'b-', label='Bezier Curve')
+    plt.scatter(points[:, 0], points[:, 1], color='blue')
     plt.plot(ctrl_points_array[:, 0], ctrl_points_array[:, 1], 'ro-', label='Control Points')
     plt.xlabel('x')
     plt.ylabel('y')
     plt.legend()
-    plt.title('Bezier Curve with Divide and Conquer Method')
+    plt.title('Bezier Curve with Divide and Conquer Method ke-{0}'.format(i))
     plt.grid(True)
 
 def main():
     global ctrl_points
     ctrl_points, iterations = get_input()
-    time_start = time.time()
+
     anim = FuncAnimation(plt.gcf(), animate, frames=iterations+1, repeat=False)
-    time_end = time.time()
-    print(f'Waktu eksekusi: {time_end - time_start} detik')
+
+
     plt.show()
+    print(f"Time: {BezierCurve(ctrl_points, iterations).gettime()} seconds")
 
 if __name__ == "__main__":
     main()

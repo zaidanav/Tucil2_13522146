@@ -7,6 +7,8 @@ class BezierCurve:
     def __init__(self, num_points):
         self.num_points = num_points
         self.user_contpt = self.get_control_points()
+        self.time = 0
+        
 
     def get_control_points(self):
         points = []
@@ -16,6 +18,7 @@ class BezierCurve:
         return np.array(points)
 
     def calculate_bezier_point(self, t, koordinat):
+        start = time.time()
         n = len(koordinat) - 1
         point = np.zeros(2)
         for i in range(n+1):
@@ -30,18 +33,32 @@ class BezierCurve:
                 for j in range(k):
                     binom_coef = binom_coef * (n - j) // (j + 1)
             point += binom_coef * (t ** i) * ((1 - t) ** (n - i)) * koordinat[i]
+        self.time += time.time() - start
         return point
+    
+    def gettime(self):
+        return self.time
 
-    def animate(self, i):
+    def animate(self, i, it): 
         plt.cla()
+
         curve_points_user = []
+
         for j in range(i + 2):
             t = j / (i + 1) 
             curve_points_user.append(self.calculate_bezier_point(t, self.user_contpt))
+    
         curve_points_user = np.array(curve_points_user)
         plt.plot(curve_points_user[:, 0], curve_points_user[:, 1], 'b-', label="Bezier Curve (Brute Force)")
+        plt.scatter(curve_points_user[:, 0], curve_points_user[:, 1], color='blue')
         plt.plot(self.user_contpt[:, 0], self.user_contpt[:, 1],'ro-', label="Control Points")
-        plt.title("Bezier Curve with Brute Force Method")
+        
+        # Check if all iterations have been completed
+        if i < it:
+            plt.title("Bezier Curve with Brute Force Method (Process)") 
+        else:
+            plt.title("Bezier Curve with Brute Force Method (Completed)")
+        
         plt.xlabel('x')
         plt.ylabel('y')
         plt.legend()
@@ -50,12 +67,10 @@ class BezierCurve:
 def main():
     num_points = int(input("Masukkan n jumlah titik: "))
     bezier = BezierCurve(num_points)
-    iterasi = ((int(input("Masukkan jumlah iterasi: "))) * (num_points-1)) 
-    time_start = time.time()
-    anim = FuncAnimation(plt.gcf(), bezier.animate, frames=iterasi+2, repeat=False)
-    time_end = time.time()
-    print(f'Waktu eksekusi: {time_end - time_start} detik')
+    it = ((int(input("Masukkan jumlah iterasi: "))) * (num_points-1)) 
+    anim = FuncAnimation(plt.gcf(), lambda i: bezier.animate(i, it), frames=it+2, repeat=False)  
     plt.show()
+    print(f"Time: {bezier.gettime()}s")
 
 if __name__ == "__main__":
     main()
